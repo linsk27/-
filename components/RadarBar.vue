@@ -115,11 +115,13 @@ const getOption = () => (
 )
 
 const renderChart = async () => {
+    await nextTick() // 确保 DOM 已挂载
     await initChart()
     setOptions(getOption())
 }
-
-onMounted(renderChart)
+onMounted(() => {
+  renderChart()
+})
 
 watch(() => props.data, renderChart)
 

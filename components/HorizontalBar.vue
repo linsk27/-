@@ -6,12 +6,15 @@
 </template>
 <script setup lang="ts">
 const { chartRef, initChart, setOptions } = useEcharts()
-const props = defineProps({
-    data: {
-        type: Object,
-        required: true
-    }
-})
+interface Region {
+  name: string
+  value: number
+}
+const props = defineProps<{
+  data: {
+    regions: Region[]
+  }
+}>()
 
 const getOption = () => (
     {
@@ -22,7 +25,7 @@ const getOption = () => (
         },
         yAxis: {
             type: 'category',
-            data: props.data.regions?.map((item: { name: any }) => item.name),
+            data: props.data.regions?.map(item => item.name),
             inverse: true,
             axisLine: { show: false },
             axisTick: { show: false },
@@ -38,12 +41,12 @@ const getOption = () => (
         series: [
             {
                 type: 'bar',
-                data: props.data.regions?.map((item: { name: any; value: any }) => ({
+                data: props.data.regions?.map(item => ({
                     name: item.name,
                     value: item.value
                 })),
                 showBackground: true,
-                backGroundStyle: {
+                backgroundStyle: {
                     color: 'rgba(180, 180, 180, 0.2)'
                 },
                 itemStyle: {
@@ -66,11 +69,13 @@ const getOption = () => (
 )
 
 const renderChart = async () => {
+    await nextTick() // 确保 DOM 已挂载
     await initChart()
     setOptions(getOption())
 }
-
-onMounted(renderChart)
+onMounted(() => {
+  renderChart()
+})
 
 watch(() => props.data, renderChart)
 </script>
