@@ -1,22 +1,20 @@
 <template>
-    <div>
+    <ClientOnly>
         <div>【数据传递信息】</div>
-        <div ref="target" class="w-full h-full"></div>
-    </div>
+        <div ref="chartRef" class="w-full h-full"></div>
+    </ClientOnly>
 </template>
-<script setup>
-import * as echarts from 'echarts';
+<script setup lang="ts">
+const { chartRef, initChart, setOptions } = useEcharts()
 const props = defineProps({
     data: {
         type: Object,
         required: true
     },
 })
-let myChart = null
-const target = ref(null)
-// 构建option配置对象
-const renderChart = () => {
-    const option = {
+
+const getOption = () => (
+    {
         xAxis: {
             show: false,
             type: 'value'
@@ -45,7 +43,7 @@ const renderChart = () => {
                             fontSize: 14
                         },
                         // 文本模拟内容
-                        formatter: function (params) {
+                        formatter: function (params: { data: { speed: any; }; }) {
                             return params.data.speed
                         }
                     }
@@ -60,7 +58,7 @@ const renderChart = () => {
                 // 边两端的标记类型,数据流动图标类型
                 edgeSymbol: ['none', 'arrow'],
                 edgeSymbolSize: 8,
-                data: props.data.relations.map(item => {
+                data: props.data.relations.map((item: { id: number; name: any; speed: any; value: any }) => {
                     if (item.id !== 0) {
                         return {
                             name: item.name,
@@ -97,7 +95,7 @@ const renderChart = () => {
                     }
                 }),
                 // 节点间的数据关系
-                links: props.data.relations.map((item, index) => ({
+                links: props.data.relations.map((item: { source: any; target: any; speed: any }, index: any) => ({
                     source: item.source,
                     target: item.target,
                     speed: `${item.speed}kb/s`,
@@ -143,14 +141,15 @@ const renderChart = () => {
             }
         ]
     }
-    myChart.setOption(option)
+)as echarts.EChartsOption
+
+const renderChart = async () => {
+    await initChart()
+    setOptions(getOption())
 }
-onMounted(() => {
-    myChart = echarts.init(target.value)
-    renderChart()
-})
-watch(() => props.data, () => {
-    renderChart()
-})
+
+onMounted(renderChart)
+
+watch(() => props.data, renderChart)
 </script>
 <style scoped land="css"></style>

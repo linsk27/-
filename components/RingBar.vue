@@ -1,23 +1,20 @@
 <template>
-    <div>
+    <ClientOnly>
         <div>【大区异常处理】</div>
-        <div ref="target" class="w-full h-full"></div>
-    </div>
+        <div ref="chartRef" class="w-full h-full"></div>
+    </ClientOnly>
 </template>
-<script setup>
-
-import * as echarts from 'echarts';
+<script setup lang="ts">
+const { chartRef, initChart, setOptions } = useEcharts()
 const props = defineProps({
     data: {
         type: Object,
         required: true
     },
 })
-let myChart = null
-const target = ref(null)
 const getSeriesData = () => {
-    const series = []
-    props.data.abnormals.forEach((item, index) => {
+    const series: { name: any; type: string; clockWise: boolean; hoverAnimation: boolean; radius: string[]; center: string[]; label: { show: boolean; } | { show: boolean; }; data: ({ value: any; name: any; } | { value: number; itemStyle: { color: string; borderWidth: number; }; tooltip: { show: boolean; }; hoverAnimation: boolean; })[] | ({ value: number; name: any; itemStyle: { color: string; borderWidth: number; }; tooltip: { show: boolean; }; hoverAnimation: boolean; } | { value: number; itemStyle: { color: string; borderWidth: number; }; tooltip: { show: boolean; }; hoverAnimation: boolean; })[]; silent?: boolean; z?: number; }[] = []
+    props.data.abnormals.forEach((item: { name: any; value: any; }, index: number) => {
         // 上层
         series.push({
             name: item.name,
@@ -96,18 +93,17 @@ const getSeriesData = () => {
     });
     return series
 }
-// 构建option配置对象
-const renderChart = () => {
-    const option = {
+const getOption = () => (
+    {
         // 图例配置
         legend: {
             show: true,
             // 图例颜色块形状
             icon: 'circle',
-            top: '8%',
+            top: '14%',
             left: '52%',
             // 图例数据文本
-            data: props.data.abnormals.map((item) => item.name),
+            data: props.data.abnormals.map((item: { name: any; }) => item.name),
             // 负数以列展示
             width: -5,
             // 色块宽高
@@ -147,14 +143,16 @@ const renderChart = () => {
         // 由于饼图过多，通过方法进行配置
         series: getSeriesData()
     }
-    myChart.setOption(option)
+)
+
+const renderChart = async () => {
+    await initChart('wordcloud')
+    setOptions(getOption())
 }
-onMounted(() => {
-    myChart = echarts.init(target.value)
-    renderChart()
-})
-watch(() => props.data, () => {
-    renderChart()
-})
+
+onMounted(renderChart)
+
+watch(() => props.data, renderChart)
+
 </script>
 <style scoped land="css"></style>

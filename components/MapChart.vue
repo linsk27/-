@@ -1,4 +1,4 @@
-components/TotalData.vue<template>
+<template>
     <div>
         地图可视化
     </div>

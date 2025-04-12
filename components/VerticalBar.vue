@@ -1,27 +1,25 @@
 <template>
-    <div>
+    <ClientOnly>
         <div>【服务资源占用比】</div>
-        <div ref='target' class='w-full h-full'></div>
-    </div>
+        <div ref='chartRef' class='w-full h-full'></div>
+    </ClientOnly>
 </template>
-<script setup>
-import * as echarts from 'echarts';
+<script setup lang="ts">
+const { chartRef, initChart, setOptions } = useEcharts()
 const props = defineProps({
     data: {
         type: Object,
         required: true
     },
 })
-let myChart = null
-const target = ref(null)
-// 构建option配置对象
-const renderChart = () => {
-    const option = {
+
+const getOption = () => (
+    {
         // X轴展示数据
         xAxis: {
             type: 'category',
             show: true,
-            data: props.data.servers?.map((item) => item.name),
+            data: props.data.servers?.map((item: { name: any; }) => item.name),
             // 展示列名并且label颜色设置
             axisLabel: { color: '#9eb1cd' },
         },
@@ -30,9 +28,9 @@ const renderChart = () => {
             type: 'value',
             show: false,
             // 设置最大值的配置
-            max: function (value) {
+            max: function (value: { max: number }) {
                 // 动态最大值设置为所有数据中的最大值1.2倍，防止样式问题
-                return parseInt(value.max * 1.2)
+                return Math.floor(value.max * 1.2);
             }
         },
         // 图标绘制位置，对应上下左右
@@ -49,7 +47,7 @@ const renderChart = () => {
             {
                 type: 'bar',
                 // 展示的数据
-                data: props.data.servers?.map((item) => ({
+                data: props.data.servers?.map((item: { name: any; value: any }) => ({
                     name: item.name,
                     value: item.value
                 })),
@@ -69,19 +67,21 @@ const renderChart = () => {
                     textStyle: {
                         color: '#fff',
                     },
-                    formatter:'{c}%'
+                    formatter: '{c}%'
                 }
             }
         ]
     }
-    myChart.setOption(option)
+)
+
+const renderChart = async () => {
+    await initChart()
+    setOptions(getOption())
 }
-onMounted(() => {
-    myChart = echarts.init(target.value)
-    renderChart()
-})
-watch(() => props.data, () => {
-    renderChart()
-})
+
+onMounted(renderChart)
+
+watch(() => props.data, renderChart)
+
 </script>
 <style scoped land="css"></style>

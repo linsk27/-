@@ -1,22 +1,19 @@
 <template>
-    <div>
+    <ClientOnly>
         <div>【云端报警风险】</div>
-        <div ref="target" class="w-full h-full"></div>
-    </div>
+        <div ref="chartRef" class="w-full h-full"></div>
+    </ClientOnly>
 </template>
-<script setup>
-import * as echarts from 'echarts';
+<script setup lang="ts">
+const { chartRef, initChart, setOptions } = useEcharts()
 const props = defineProps({
     data: {
         type: Object,
         required: true
     },
 })
-let myChart = null
-const target = ref(null)
-// 构建option配置对象
-const renderChart = () => {
-    const option = {
+const getOption = () => (
+    {
         // 雷达坐标系配置
         radar: {
             // 坐标系（外部）名字配置
@@ -47,7 +44,7 @@ const renderChart = () => {
                 }
             },
             // 指示器,就是name部分的坐标系（外部）名字
-            indicator: props.data.risks.map((item) => ({
+            indicator: props.data.risks.map((item: { name: any }) => ({
                 name: item.name,
                 max: 100
             })),
@@ -109,20 +106,22 @@ const renderChart = () => {
                 },
                 data: [
                     {
-                        value: props.data.risks.map((item) => item.value)
+                        value: props.data.risks.map((item: { value: any }) => item.value)
                     }
                 ]
             }
         ]
     }
-    myChart.setOption(option)
+)
+
+const renderChart = async () => {
+    await initChart()
+    setOptions(getOption())
 }
-onMounted(() => {
-    myChart = echarts.init(target.value)
-    renderChart()
-})
-watch(() => props.data, () => {
-    renderChart()
-})
+
+onMounted(renderChart)
+
+watch(() => props.data, renderChart)
+
 </script>
 <style scoped land="css"></style>
