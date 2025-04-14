@@ -8,8 +8,8 @@
     </div>
     <!-- 中 -->
     <div class="w-1/2 mr-5 flex flex-col">
-      <TotalData class="bg-slate-800/50 p-3 flex-1" />
-      <MapChart class="bg-slate-800/50 p-3 flex-1" />
+      <TotalData class="p-3" :data="data?.totalData ?? {}" />
+      <MapChart class="bg-slate-800/50 p-3  mt-[10px] flex-1" />
     </div>
     <!-- 右 -->
     <div class="flex-1 bg-slate-800/50 p-3 flex flex-col">
@@ -21,7 +21,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   data: any
 }>()
+
 </script>
